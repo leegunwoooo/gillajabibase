@@ -10,10 +10,14 @@ public enum JobCategory {
     UI_UX_DESIGNER("DE001", "UI/UX 디자이너", "디자인", "🎨"),
     GRAPHIC_DESIGNER("DE002", "그래픽 디자이너", "디자인", "✏️"),
     MARKETER("MK001", "마케터", "경영", "📣"),
-    PRODUCT_MANAGER("PM001", "프로덕트 매니저", "경영", "📋"),
     RESEARCHER("RS001", "연구원", "과학", "🔬"),
     CONTENT_CREATOR("CC001", "콘텐츠 크리에이터", "미디어", "🎬"),
-    TEACHER("ED001", "교사", "교육", "📚");
+    MECHANICAL_ENGINEER("ME001", "기계 엔지니어", "기계", "⚙️"),
+    ELECTRICIAN("EL001", "전기 기술자", "전기/전자", "⚡"),
+    COOK("CK001", "조리사", "식품/조리", "🍳"),
+    AGRICULTURAL_TECHNICIAN("AG001", "농업 기술자", "농업", "🌱"),
+    FOOD_PROCESSOR("AG002", "식품 가공사", "식품/농업", "🥫"),
+    NURSING_ASSISTANT("MH001", "간호조무사", "의료/보건", "🏥");
 
     public final String id;
     public final String name;
