@@ -9,7 +9,6 @@ import com.bamdoliro.gilajabi.presentation.aptitude.dto.response.JobRecommendRes
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
-import java.util.Arrays;
 
 @Slf4j
 @UseCase
@@ -82,32 +81,11 @@ public class AnalyzeAptitudeUseCase {
                     .ifPresent(job -> includedJobIds.add(job.id));
         }
 
-        // 추천 직업들의 점수 합 계산
-        int totalScore = includedJobIds.stream()
-                .mapToInt(jobId -> scores.getOrDefault(jobId, 0))
-                .sum();
-
-        // 각 직업의 matchRate를 전체 합 100%로 정규화
-        List<String> jobIdList = new ArrayList<>(includedJobIds);
-        int[] rawRates = jobIdList.stream()
-                .mapToInt(jobId -> {
-                    int score = scores.getOrDefault(jobId, 0);
-                    return totalScore > 0 ? (int) Math.floor((double) score / totalScore * 100) : 0;
-                })
-                .toArray();
-
-        // 반올림 오차로 합이 100이 안 될 경우, 나머지를 가장 점수 높은 직업에 추가
-        int rateSum = Arrays.stream(rawRates).sum();
-        int remainder = 100 - rateSum;
-        if (remainder > 0 && rawRates.length > 0) {
-            rawRates[0] += remainder;
-        }
-
         List<JobRecommendResponse> recommended = new ArrayList<>();
-        for (int i = 0; i < jobIdList.size(); i++) {
-            String jobId = jobIdList.get(i);
+        for (String jobId : includedJobIds) {
             int score = scores.getOrDefault(jobId, 0);
-            int matchRate = rawRates[i];
+            int maxScore = maxScores.getOrDefault(jobId, 1);
+            int matchRate = Math.min(100, (int) Math.round((double) score / maxScore * 100));
             JobCategory.findById(jobId)
                     .map(job -> JobRecommendResponse.builder()
                             .jobId(job.id)
