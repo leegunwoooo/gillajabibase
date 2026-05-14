@@ -37,13 +37,39 @@ public class AnalyzeAptitudeUseCase {
             }
         }
 
-        // 3. 점수 높은 순 정렬 → 상위 3개 직업 추출
-        List<JobRecommendResponse> recommended = scores.entrySet().stream()
+        // 3. 점수 높은 순 전체 정렬
+        List<Map.Entry<String, Integer>> sorted = scores.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-                .limit(3)
-                .map(entry -> {
-                    String jobId = entry.getKey();
-                    int score = entry.getValue();
+                .toList();
+
+        // 4. 1위 직업의 field 확인 → 해당 field 직업 무조건 포함
+        String topField = sorted.stream()
+                .map(e -> JobCategory.findById(e.getKey()))
+                .filter(Optional::isPresent)
+                .map(opt -> opt.get().field)
+                .findFirst()
+                .orElse("");
+
+        Set<String> includedJobIds = new LinkedHashSet<>();
+
+        // 1위 field 직업 먼저 추가
+        for (Map.Entry<String, Integer> entry : sorted) {
+            JobCategory.findById(entry.getKey())
+                    .filter(job -> job.field.equals(topField))
+                    .ifPresent(job -> includedJobIds.add(job.id));
+        }
+
+        // 나머지 슬롯을 다른 field 상위 직업으로 채워 총 4개 맞춤
+        for (Map.Entry<String, Integer> entry : sorted) {
+            if (includedJobIds.size() >= 4) break;
+            JobCategory.findById(entry.getKey())
+                    .filter(job -> !job.field.equals(topField))
+                    .ifPresent(job -> includedJobIds.add(job.id));
+        }
+
+        List<JobRecommendResponse> recommended = includedJobIds.stream()
+                .map(jobId -> {
+                    int score = scores.getOrDefault(jobId, 0);
                     int maxScore = maxScores.getOrDefault(jobId, 1);
                     int matchRate = Math.min(100, (int) Math.round((double) score / maxScore * 100));
 
