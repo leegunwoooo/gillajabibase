@@ -10,5 +10,6 @@ import java.util.Map;
 @Builder
 public class AptitudeResultResponse {
     private Map<String, Integer> categoryScores;
+    private Map<String, Integer> categoryRates;
     private List<JobRecommendResponse> recommendedJobs;
 }

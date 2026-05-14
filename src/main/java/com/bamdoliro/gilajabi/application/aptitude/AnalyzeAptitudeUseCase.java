@@ -9,7 +9,7 @@ import com.bamdoliro.gilajabi.presentation.aptitude.dto.response.JobRecommendRes
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
 
 @Slf4j
 @UseCase
@@ -28,6 +28,21 @@ public class AnalyzeAptitudeUseCase {
         }
 
         log.info("카테고리별 점수: {}", scores);
+
+        // 1-1. 카테고리 점수를 전체 합 대비 퍼센트로 정규화 (합산 = 100)
+        int totalCategoryScore = scores.values().stream().mapToInt(Integer::intValue).sum();
+        Map<String, Integer> categoryRates = new LinkedHashMap<>();
+        if (totalCategoryScore > 0) {
+            List<String> categoryKeys = new ArrayList<>(scores.keySet());
+            int[] catRawRates = categoryKeys.stream()
+                    .mapToInt(k -> (int) Math.floor((double) scores.get(k) / totalCategoryScore * 100))
+                    .toArray();
+            int catRemainder = 100 - Arrays.stream(catRawRates).sum();
+            if (catRemainder > 0 && catRawRates.length > 0) catRawRates[0] += catRemainder;
+            for (int i = 0; i < categoryKeys.size(); i++) {
+                categoryRates.put(categoryKeys.get(i), catRawRates[i]);
+            }
+        }
 
         // 2. 최대 가능 점수 계산 (5점 만점 × 가중치 합)
         Map<String, Integer> maxScores = new HashMap<>();
@@ -67,28 +82,47 @@ public class AnalyzeAptitudeUseCase {
                     .ifPresent(job -> includedJobIds.add(job.id));
         }
 
-        List<JobRecommendResponse> recommended = includedJobIds.stream()
-                .map(jobId -> {
-                    int score = scores.getOrDefault(jobId, 0);
-                    int maxScore = maxScores.getOrDefault(jobId, 1);
-                    int matchRate = Math.min(100, (int) Math.round((double) score / maxScore * 100));
+        // 추천 직업들의 점수 합 계산
+        int totalScore = includedJobIds.stream()
+                .mapToInt(jobId -> scores.getOrDefault(jobId, 0))
+                .sum();
 
-                    return JobCategory.findById(jobId)
-                            .map(job -> JobRecommendResponse.builder()
-                                    .jobId(job.id)
-                                    .jobName(job.name)
-                                    .field(job.field)
-                                    .icon(job.icon)
-                                    .score(score)
-                                    .matchRate(matchRate)
-                                    .build())
-                            .orElse(null);
+        // 각 직업의 matchRate를 전체 합 100%로 정규화
+        List<String> jobIdList = new ArrayList<>(includedJobIds);
+        int[] rawRates = jobIdList.stream()
+                .mapToInt(jobId -> {
+                    int score = scores.getOrDefault(jobId, 0);
+                    return totalScore > 0 ? (int) Math.floor((double) score / totalScore * 100) : 0;
                 })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .toArray();
+
+        // 반올림 오차로 합이 100이 안 될 경우, 나머지를 가장 점수 높은 직업에 추가
+        int rateSum = Arrays.stream(rawRates).sum();
+        int remainder = 100 - rateSum;
+        if (remainder > 0 && rawRates.length > 0) {
+            rawRates[0] += remainder;
+        }
+
+        List<JobRecommendResponse> recommended = new ArrayList<>();
+        for (int i = 0; i < jobIdList.size(); i++) {
+            String jobId = jobIdList.get(i);
+            int score = scores.getOrDefault(jobId, 0);
+            int matchRate = rawRates[i];
+            JobCategory.findById(jobId)
+                    .map(job -> JobRecommendResponse.builder()
+                            .jobId(job.id)
+                            .jobName(job.name)
+                            .field(job.field)
+                            .icon(job.icon)
+                            .score(score)
+                            .matchRate(matchRate)
+                            .build())
+                    .ifPresent(recommended::add);
+        }
 
         return AptitudeResultResponse.builder()
                 .categoryScores(scores)
+                .categoryRates(categoryRates)
                 .recommendedJobs(recommended)
                 .build();
     }
