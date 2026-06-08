@@ -33,7 +33,6 @@ public class CompareSchoolsUseCase {
                 .location(school.location)
                 .industryField(school.industryField)
                 .icon(school.getIcon())
-                .website(school.website)
                 .hasDormitory(school.hasDormitory)
                 .capacity(school.capacity)
                 .competitionRate(school.competitionRate)

@@ -19,7 +19,6 @@ public class SchoolCompareResponse {
         private String location;
         private String industryField;
         private String icon;
-        private String website;
         private boolean hasDormitory;
         private int capacity;
         private String competitionRate;
