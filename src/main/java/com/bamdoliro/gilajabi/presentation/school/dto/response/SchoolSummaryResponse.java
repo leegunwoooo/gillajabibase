@@ -1,11 +1,11 @@
-package com.bamdoliro.gilajabi.presentation.aptitude.dto.response;
+package com.bamdoliro.gilajabi.presentation.school.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class SchoolRecommendResponse {
+public class SchoolSummaryResponse {
     private String schoolId;
     private String schoolName;
     private String location;

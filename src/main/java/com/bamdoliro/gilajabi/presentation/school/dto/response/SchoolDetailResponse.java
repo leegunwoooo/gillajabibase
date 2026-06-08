@@ -1,11 +1,13 @@
-package com.bamdoliro.gilajabi.presentation.aptitude.dto.response;
+package com.bamdoliro.gilajabi.presentation.school.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @Builder
-public class SchoolRecommendResponse {
+public class SchoolDetailResponse {
     private String schoolId;
     private String schoolName;
     private String location;
@@ -15,4 +17,6 @@ public class SchoolRecommendResponse {
     private boolean hasDormitory;
     private int capacity;
     private String competitionRate;
+    private List<String> mainJobs;
+    private List<String> jobFields;
 }
