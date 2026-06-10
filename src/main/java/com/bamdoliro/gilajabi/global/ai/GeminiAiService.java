@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class GeminiAiService {
 
     private static final String API_URL = "https://generativelanguage.googleapis.com";
-    private static final String MODEL = "gemini-2.0-flash";
+    private static final String MODEL = "gemini-2.5-flash";
 
     private final RestClient restClient;
     private final String apiKey;
