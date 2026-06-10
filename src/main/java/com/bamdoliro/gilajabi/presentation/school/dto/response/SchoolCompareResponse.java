@@ -10,6 +10,7 @@ import java.util.List;
 public class SchoolCompareResponse {
     private SchoolDetail school1;
     private SchoolDetail school2;
+    private String aiSummary;
 
     @Getter
     @Builder

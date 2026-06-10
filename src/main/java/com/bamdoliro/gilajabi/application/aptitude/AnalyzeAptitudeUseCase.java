@@ -2,17 +2,22 @@ package com.bamdoliro.gilajabi.application.aptitude;
 
 import com.bamdoliro.gilajabi.domain.aptitude.constant.AptitudeQuestions;
 import com.bamdoliro.gilajabi.domain.job.entity.JobCategory;
+import com.bamdoliro.gilajabi.global.ai.GeminiAiService;
 import com.bamdoliro.gilajabi.global.annotation.UseCase;
 import com.bamdoliro.gilajabi.presentation.aptitude.dto.request.AptitudeAnswerRequest;
 import com.bamdoliro.gilajabi.presentation.aptitude.dto.response.AptitudeResultResponse;
 import com.bamdoliro.gilajabi.presentation.aptitude.dto.response.JobRecommendResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
 @Slf4j
 @UseCase
+@RequiredArgsConstructor
 public class AnalyzeAptitudeUseCase {
+
+    private final GeminiAiService geminiAiService;
 
     public AptitudeResultResponse execute(AptitudeAnswerRequest request) {
         Map<Integer, Integer> answers = request.getAnswers();
@@ -98,10 +103,13 @@ public class AnalyzeAptitudeUseCase {
                     .ifPresent(recommended::add);
         }
 
+        String aiComment = geminiAiService.generateAptitudeComment(recommended);
+
         return AptitudeResultResponse.builder()
                 .categoryScores(scores)
                 .categoryRates(categoryRates)
                 .recommendedJobs(recommended)
+                .aiComment(aiComment)
                 .build();
     }
 }

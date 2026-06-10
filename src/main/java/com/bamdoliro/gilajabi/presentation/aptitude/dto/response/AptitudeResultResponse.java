@@ -12,4 +12,5 @@ public class AptitudeResultResponse {
     private Map<String, Integer> categoryScores;
     private Map<String, Integer> categoryRates;
     private List<JobRecommendResponse> recommendedJobs;
+    private String aiComment;
 }
