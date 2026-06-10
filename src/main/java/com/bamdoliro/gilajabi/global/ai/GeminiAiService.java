@@ -1,5 +1,6 @@
 package com.bamdoliro.gilajabi.global.ai;
 
+import com.bamdoliro.gilajabi.domain.school.entity.MeisterSchool;
 import com.bamdoliro.gilajabi.presentation.aptitude.dto.response.JobRecommendResponse;
 import com.bamdoliro.gilajabi.presentation.school.dto.response.SchoolCompareResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -86,6 +87,40 @@ public class GeminiAiService {
             log.error("학교 비교 AI 요약 생성 실패", e);
             return null;
         }
+    }
+
+    public String recommendSchoolByQuery(String query) {
+        try {
+            String schoolData = buildSchoolContext();
+
+            String prompt = """
+                    당신은 마이스터고 진로 가이드입니다. 아래 학교 목록만을 근거로 학생의 질문에 맞는 학교를 추천해주세요.
+                    목록에 없는 학교는 절대 언급하지 마세요.
+
+                    [마이스터고 목록]
+                    %s
+
+                    [학생 질문]
+                    %s
+
+                    추천 학교와 이유를 2~3개 학교로 간결하게 설명해주세요. 마크다운 없이 순수 텍스트로만 작성해주세요.
+                    """.formatted(schoolData, query);
+
+            return callGemini(prompt);
+        } catch (Exception e) {
+            log.error("자연어 학교 추천 생성 실패", e);
+            return null;
+        }
+    }
+
+    private String buildSchoolContext() {
+        return java.util.Arrays.stream(MeisterSchool.values())
+                .map(s -> "%s(%s) - %s | 주요직업: %s | 분야: %s".formatted(
+                        s.name, s.location, s.industryField,
+                        String.join(", ", s.mainJobs),
+                        String.join(", ", s.jobFields)
+                ))
+                .collect(Collectors.joining("\n"));
     }
 
     private String callGemini(String prompt) {
