@@ -1,12 +1,15 @@
 package com.bamdoliro.gilajabi.presentation.school;
 
+import com.bamdoliro.gilajabi.application.school.CalculateAdmissionScoreUseCase;
 import com.bamdoliro.gilajabi.application.school.CompareSchoolsUseCase;
 import com.bamdoliro.gilajabi.application.school.GetAllSchoolsUseCase;
 import com.bamdoliro.gilajabi.application.school.GetSchoolDetailUseCase;
 import com.bamdoliro.gilajabi.application.school.GetSchoolRecommendUseCase;
 import com.bamdoliro.gilajabi.application.school.RecommendSchoolByQueryUseCase;
 import com.bamdoliro.gilajabi.presentation.aptitude.dto.response.SchoolRecommendResponse;
+import com.bamdoliro.gilajabi.presentation.school.dto.request.AdmissionScoreRequest;
 import com.bamdoliro.gilajabi.presentation.school.dto.request.SchoolChatRequest;
+import com.bamdoliro.gilajabi.presentation.school.dto.response.AdmissionScoreResponse;
 import com.bamdoliro.gilajabi.presentation.school.dto.response.SchoolChatResponse;
 import com.bamdoliro.gilajabi.presentation.school.dto.response.SchoolCompareResponse;
 import com.bamdoliro.gilajabi.presentation.school.dto.response.SchoolDetailResponse;
@@ -27,6 +30,7 @@ public class SchoolController {
     private final GetAllSchoolsUseCase getAllSchoolsUseCase;
     private final GetSchoolDetailUseCase getSchoolDetailUseCase;
     private final RecommendSchoolByQueryUseCase recommendSchoolByQueryUseCase;
+    private final CalculateAdmissionScoreUseCase calculateAdmissionScoreUseCase;
 
     @GetMapping
     public ResponseEntity<List<SchoolSummaryResponse>> getAll() {
@@ -54,5 +58,13 @@ public class SchoolController {
     @PostMapping("/chat")
     public ResponseEntity<SchoolChatResponse> chat(@RequestBody SchoolChatRequest request) {
         return ResponseEntity.ok(recommendSchoolByQueryUseCase.execute(request.getQuery()));
+    }
+
+    @PostMapping("/{schoolId}/admission-score")
+    public ResponseEntity<AdmissionScoreResponse> calculateAdmissionScore(
+            @PathVariable String schoolId,
+            @RequestBody AdmissionScoreRequest request
+    ) {
+        return ResponseEntity.ok(calculateAdmissionScoreUseCase.execute(schoolId, request));
     }
 }
